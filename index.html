@@ -5,22 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Casino Bingo</title>
     <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" type="image/png" href="icon.png">
+    
     <meta name="theme-color" content="#000000">
     <style>
         * { box-sizing: border-box; }
 
         :root {
-            --gold: #d4af37;
-            --dark: #1a1a1a;
-            --green: #2ecc71;
-            --red: #e74c3c;
-            --text: #ffffff;
+            --gold-base: #d4af37;
+            --gold-gradient: linear-gradient(145deg, #d4af37 0%, #f1c40f 50%, #d4af37 100%);
+            --dark-base: #111;
+            --dark-gradient: radial-gradient(circle at center, #2c2c2c 0%, #111 70%, #000 100%);
+            --green-velvet: radial-gradient(circle at center, #27ae60 0%, #2ecc71 70%);
+            --gold-rim: #f7e09a;
+            --red-alert: #e74c3c;
+            --text-white: #fff;
+            --text-dark: #222;
         }
 
         body {
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #000;
-            color: var(--text);
+            background: var(--dark-gradient);
+            color: var(--text-white);
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -28,47 +35,77 @@
             min-height: 100vh;
             user-select: none;
             overflow-x: hidden; 
+            padding-bottom: 20px; 
         }
 
         header {
             width: 100%;
-            padding: 20px 0;
+            padding: 25px 0;
             text-align: center;
-            background: linear-gradient(to bottom, #222, #000);
-            border-bottom: 2px solid var(--gold);
+            background: linear-gradient(to bottom, #1a1a1a 0%, #000 100%);
+            border-bottom: 2px solid var(--gold-base);
             margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.7);
         }
 
-        h1 { color: var(--gold); margin: 0; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px; }
+        h1 { 
+            color: var(--gold-base);
+            margin: 0; 
+            font-size: 1.8rem; 
+            text-transform: uppercase; 
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.6), 0 0 20px rgba(212, 175, 55, 0.4);
+            font-weight: 800;
+        }
 
         .menu-bar {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             margin-bottom: 10px;
         }
 
         .menu-btn {
-            background: #222;
-            color: var(--gold);
-            border: 1px solid var(--gold);
-            padding: 10px 20px;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            color: var(--gold-base);
+            border: 1px solid var(--gold-base);
+            padding: 12px 24px;
             cursor: pointer;
-            font-weight: bold;
-            border-radius: 5px;
-            transition: 0.3s;
+            font-weight: 800;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
         }
 
         .menu-btn.active {
-            background: var(--gold);
-            color: #000;
+            background: var(--gold-gradient);
+            color: var(--text-dark);
+            border-color: var(--gold-rim);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Zufallsknopf spezielles Design */
+        #btn-random {
+            margin-top: 15px;
+            padding: 10px 20px;
+            font-size: 0.85rem;
+            background: linear-gradient(145deg, #333, #1a1a1a);
+            border: 1px solid #555;
+            color: #ddd;
+        }
+        
+        #btn-random:active {
+            background: #111;
         }
 
         #error-msg {
-            color: var(--red);
-            font-size: 0.9rem;
+            color: var(--red-alert);
+            font-size: 0.95rem;
             height: 1.2rem;
             margin-bottom: 10px;
-            font-weight: bold;
+            font-weight: 700;
             text-align: center;
             padding: 0 10px;
         }
@@ -76,23 +113,36 @@
         .grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 5px;
+            gap: 7px;
             width: 100%;
             max-width: 450px;
-            padding: 10px;
+            padding: 15px;
             margin: 0 auto;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(212, 175, 55, 0.1);
         }
 
         .cell {
             aspect-ratio: 1;
-            background: var(--dark);
-            border: 1px solid #444;
+            background: linear-gradient(145deg, #222, #111);
+            border: 1px solid rgba(212, 175, 55, 0.15);
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 4px;
-            transition: all 0.2s;
+            border-radius: 8px;
+            transition: all 0.2s ease;
             position: relative;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .cell::after { 
+            content: '';
+            position: absolute;
+            top: 1px; left: 1px; right: 1px; bottom: 1px;
+            border: 1px solid rgba(212, 175, 55, 0.05);
+            border-radius: 7px;
+            pointer-events: none;
         }
 
         .cell input {
@@ -100,67 +150,74 @@
             height: 100%;
             background: transparent;
             border: none;
-            color: var(--text);
+            color: var(--text-white);
             text-align: center;
-            font-size: 18px; 
+            font-size: 20px; 
             outline: none;
+            font-weight: 600;
             opacity: 1; 
         }
 
         .cell.duplicate {
-            border: 2px solid var(--red);
-            background: rgba(231, 76, 60, 0.2);
+            border: 2px solid var(--red-alert);
+            background: rgba(231, 76, 60, 0.3);
         }
 
         .cell.marked {
-            background-color: var(--green) !important;
-            border-color: #fff;
+            background: var(--green-velvet) !important;
+            border: 2px solid var(--gold-rim);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
         }
 
         .cell.marked input {
-            color: #000;
-            font-weight: bold;
+            color: var(--text-dark);
+            font-weight: 800;
+            font-size: 22px;
         }
 
         #bingo-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 100;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            color: var(--gold);
-            font-size: 5rem;
-            font-weight: bold;
-            text-shadow: 0 0 20px var(--gold);
-            animation: pulse 1s infinite;
+            color: var(--gold-base);
+            font-size: 6rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: 0 0 15px var(--gold-base), 0 0 30px var(--gold-base);
+            animation: pulseBingo 1s infinite;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+        @keyframes pulseBingo {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         #bingo-overlay button {
-            margin-top: 20px;
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            background: var(--gold);
+            margin-top: 30px;
+            padding: 18px 50px;
+            font-size: 1.4rem;
+            background: var(--gold-gradient);
             border: none;
             cursor: pointer;
-            color: #000;
-            font-weight: bold;
-            border-radius: 5px;
+            color: var(--text-dark);
+            font-weight: 800;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.6);
         }
 
         #caller-view {
             display: none;
             position: fixed;
             top:0; left:0; width:100%; height:100%;
-            background: #000;
+            background: var(--dark-gradient);
             z-index: 200;
             text-align: center;
             padding: 20px;
@@ -168,44 +225,90 @@
         }
 
         .big-number {
-            font-size: clamp(5rem, 20vw, 12rem);
-            color: var(--gold);
+            font-size: clamp(5rem, 25vw, 15rem);
+            color: var(--gold-base);
             margin: 20px 0;
-            min-height: 12rem;
+            min-height: 15rem;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: 900;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
         }
 
         .history {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
             justify-content: center;
-            max-width: 800px;
+            max-width: 850px;
             margin: 0 auto;
         }
 
         .history-ball {
-            width: 45px; height: 45px;
-            background: #222;
-            border: 1px solid var(--gold);
+            width: 50px; height: 50px;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border: 1px solid var(--gold-base);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            color: var(--gold);
+            font-weight: 800;
+            color: var(--gold-base);
+            font-size: 1.1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+
+        .history-ball.newest {
+            background: var(--gold-gradient);
+            color: var(--text-dark);
+            transform: scale(1.15);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.8);
+            border: 2px solid #fff;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1.15); opacity: 1; }
+        }
+
+        #reset-grid-container {
+            display: none; 
+            margin-top: 20px;
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .reset-btn {
+            background: var(--red-alert);
+            color: var(--text-white);
+            border: 2px solid #a93226;
+            padding: 15px 30px;
+            cursor: pointer;
+            font-weight: 800;
+            border-radius: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 1rem;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.6);
+            transition: all 0.2s ease;
         }
 
         .admin-link {
             margin-top: auto;
-            margin-bottom: 20px;
-            color: #444;
-            font-size: 0.8rem;
+            margin-bottom: 25px;
+            color: #555;
+            font-size: 0.85rem;
             text-decoration: none;
-            padding: 20px;
+            padding: 15px;
+            opacity: 0.6;
+            transition: opacity 0.3s;
         }
+
+        .admin-link:hover { opacity: 1; }
     </style>
 </head>
 <body>
@@ -222,19 +325,25 @@
 
     <div class="grid" id="bingo-grid"></div>
 
+    <button id="btn-random" class="menu-btn" onclick="fillRandom()">Würfeln (Zufällig füllen)</button>
+
+    <div id="reset-grid-container">
+        <button class="reset-btn" onclick="clearGrid()">Feld komplett löschen</button>
+    </div>
+
     <a href="#" class="admin-link" onclick="showCaller()">Admin / Beamer Ansicht</a>
 </div>
 
 <div id="bingo-overlay">
     BINGO!
-    <button onclick="closeBingo()">Weiter</button>
+    <button onclick="closeBingo()">Weiter spielen</button>
 </div>
 
 <div id="caller-view">
-    <h1 style="color: var(--gold);">Zahlen ziehen</h1>
+    <h1 style="color: var(--gold-base);">Zahlen ziehen</h1>
     <div class="big-number" id="current-number">--</div>
-    <button class="menu-btn" style="font-size: 1.5rem; padding: 15px 30px;" onclick="drawNumber()">Nächste Zahl</button>
-    <p style="color: var(--gold); margin-top: 30px;">Gezogen:</p>
+    <button class="menu-btn" style="font-size: 1.6rem; padding: 18px 36px;" onclick="drawNumber()">Zahl ziehen</button>
+    <p style="color: var(--gold-base); margin-top: 40px; font-weight: 700;">Gezogen:</p>
     <div class="history" id="number-history"></div>
     <br><br>
     <button class="menu-btn" onclick="location.reload()">Zurück zum Spiel</button>
@@ -244,28 +353,32 @@
     let mode = 'edit';
     const grid = document.getElementById('bingo-grid');
     const errorMsg = document.getElementById('error-msg');
+    const resetContainer = document.getElementById('reset-grid-container');
+    const btnRandom = document.getElementById('btn-random');
     const drawnNumbers = new Set();
     
+    let bingoAchieved = false;
+
     function initGrid() {
+        grid.innerHTML = '';
         let savedData = [];
         let savedMarks = [];
         
-        // Sicherer Datenabruf, falls der Speicher korrupt ist
         try {
             const lsData = localStorage.getItem('bingo_numbers');
             const lsMarks = localStorage.getItem('bingo_marks');
+            bingoAchieved = localStorage.getItem('bingo_status') === 'achieved';
+
             if (lsData) savedData = JSON.parse(lsData);
             if (lsMarks) savedMarks = JSON.parse(lsMarks);
             
             if (!Array.isArray(savedData)) savedData = [];
             if (!Array.isArray(savedMarks)) savedMarks = [];
         } catch (e) {
-            console.warn("Fehlerhafte Speicherdaten wurden zurückgesetzt.");
             savedData = [];
             savedMarks = [];
+            bingoAchieved = false;
         }
-
-        grid.innerHTML = ''; // Sicherheitshalber altes Raster löschen
 
         for (let i = 0; i < 25; i++) {
             const cell = document.createElement('div');
@@ -277,11 +390,20 @@
             const input = document.createElement('input');
             input.type = 'number';
             input.inputMode = 'numeric';
+            input.min = "1";
+            input.max = "100";
             input.value = savedData[i] || '';
             input.placeholder = "?";
             
-            input.addEventListener('input', () => {
-                errorMsg.innerText = ""; // Löscht Fehler beim Tippen
+            input.addEventListener('input', (e) => {
+                // NEU: Zahlen-Begrenzung 1 bis 100
+                if (e.target.value !== "") {
+                    let val = parseInt(e.target.value);
+                    if (val > 100) e.target.value = 100;
+                    if (val < 1) e.target.value = 1;
+                }
+                
+                errorMsg.innerText = "";
                 validateDuplicates();
                 saveState();
             });
@@ -292,7 +414,31 @@
             });
             grid.appendChild(cell);
         }
+        
         validateDuplicates();
+        if (bingoAchieved) resetContainer.style.display = 'block';
+    }
+
+    // NEU: Funktion zum zufälligen Füllen des Feldes
+    function fillRandom() {
+        if (!confirm("Möchtest du das Feld mit 25 zufälligen Zahlen füllen? Aktuelle Eingaben werden überschrieben.")) return;
+        
+        const randomNumbers = new Set();
+        while(randomNumbers.size < 25) {
+            randomNumbers.add(Math.floor(Math.random() * 100) + 1);
+        }
+        
+        const numArr = Array.from(randomNumbers);
+        const inputs = document.querySelectorAll('.cell input');
+        
+        inputs.forEach((input, index) => {
+            input.value = numArr[index];
+            input.parentElement.classList.remove('marked', 'duplicate'); // Bereinigt eventuelle alte Markierungen
+        });
+        
+        errorMsg.innerText = "";
+        validateDuplicates();
+        saveState();
     }
 
     function validateDuplicates() {
@@ -319,13 +465,10 @@
             const inputs = document.querySelectorAll('.cell input');
             const values = Array.from(inputs).map(inp => inp.value.trim());
             
-            // 1. Check: Alles ausgefüllt?
             if (values.some(v => v === "")) {
                 errorMsg.innerText = "Bitte erst alle 25 Felder ausfüllen!";
                 return;
             }
-            
-            // 2. Check: Doppelte Zahlen vorhanden?
             if (validateDuplicates()) {
                 errorMsg.innerText = "Bitte erst doppelte Zahlen korrigieren!";
                 return;
@@ -336,6 +479,9 @@
         errorMsg.innerText = ""; 
         document.getElementById('btn-edit').classList.toggle('active', mode === 'edit');
         document.getElementById('btn-play').classList.toggle('active', mode === 'play');
+        
+        // Verstecke den Random-Knopf im Werten-Modus
+        btnRandom.style.display = (mode === 'edit') ? 'inline-block' : 'none';
         
         const inputs = document.querySelectorAll('.cell input');
         inputs.forEach(input => {
@@ -366,9 +512,12 @@
 
         localStorage.setItem('bingo_numbers', JSON.stringify(numbers));
         localStorage.setItem('bingo_marks', JSON.stringify(marks));
+        if (bingoAchieved) localStorage.setItem('bingo_status', 'achieved');
     }
 
     function checkBingo() {
+        if (bingoAchieved) return; 
+
         const cells = document.querySelectorAll('.cell');
         const isMarked = (i) => cells[i].classList.contains('marked');
         const lines = [
@@ -379,7 +528,10 @@
 
         for (let line of lines) {
             if (line.every(isMarked)) {
+                bingoAchieved = true;
+                saveState(); 
                 document.getElementById('bingo-overlay').style.display = 'flex';
+                resetContainer.style.display = 'block';
                 return;
             }
         }
@@ -387,6 +539,22 @@
 
     function closeBingo() {
         document.getElementById('bingo-overlay').style.display = 'none';
+    }
+
+    function clearGrid() {
+        if (!confirm("Bist du sicher? Alle eingetragenen Zahlen und Markierungen werden gelöscht.")) return;
+
+        localStorage.removeItem('bingo_numbers');
+        localStorage.removeItem('bingo_marks');
+        localStorage.removeItem('bingo_status');
+        
+        drawnNumbers.clear(); 
+        bingoAchieved = false;
+        
+        resetContainer.style.display = 'none';
+
+        setMode('edit');
+        initGrid(); 
     }
 
     function showCaller() {
@@ -402,9 +570,13 @@
         drawnNumbers.add(num);
         document.getElementById('current-number').innerText = num;
         
+        document.querySelectorAll('.history-ball').forEach(ball => {
+            ball.classList.remove('newest');
+        });
+
         const historyDiv = document.getElementById('number-history');
         const ball = document.createElement('div');
-        ball.className = 'history-ball';
+        ball.className = 'history-ball newest'; 
         ball.innerText = num;
         historyDiv.prepend(ball);
     }
