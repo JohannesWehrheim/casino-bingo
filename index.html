@@ -7,10 +7,13 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
     <style>
+        * { box-sizing: border-box; }
+
         :root {
             --gold: #d4af37;
             --dark: #1a1a1a;
             --green: #2ecc71;
+            --red: #e74c3c;
             --text: #ffffff;
         }
 
@@ -24,6 +27,7 @@
             align-items: center;
             min-height: 100vh;
             user-select: none;
+            overflow-x: hidden; 
         }
 
         header {
@@ -32,7 +36,7 @@
             text-align: center;
             background: linear-gradient(to bottom, #222, #000);
             border-bottom: 2px solid var(--gold);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         h1 { color: var(--gold); margin: 0; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px; }
@@ -40,7 +44,7 @@
         .menu-bar {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .menu-btn {
@@ -51,6 +55,7 @@
             cursor: pointer;
             font-weight: bold;
             border-radius: 5px;
+            transition: 0.3s;
         }
 
         .menu-btn.active {
@@ -58,14 +63,22 @@
             color: #000;
         }
 
-        /* Bingo Grid */
+        #error-msg {
+            color: var(--red);
+            font-size: 0.8rem;
+            height: 1rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
         .grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-            width: 95vw;
-            max-width: 400px;
+            gap: 5px;
+            width: 100%;
+            max-width: 450px;
             padding: 10px;
+            margin: 0 auto;
         }
 
         .cell {
@@ -75,10 +88,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
-            font-weight: bold;
             border-radius: 4px;
             transition: all 0.2s;
+            position: relative;
         }
 
         .cell input {
@@ -88,18 +100,27 @@
             border: none;
             color: var(--text);
             text-align: center;
-            font-size: 1.2rem;
+            font-size: 18px; 
             outline: none;
+            opacity: 1; 
+        }
+
+        /* Markierung für doppelte Zahlen */
+        .cell.duplicate {
+            border: 2px solid var(--red);
+            background: rgba(231, 76, 60, 0.2);
         }
 
         .cell.marked {
             background-color: var(--green) !important;
-            color: #000;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
             border-color: #fff;
         }
 
-        /* Bingo Overlay */
+        .cell.marked input {
+            color: #000;
+            font-weight: bold;
+        }
+
         #bingo-overlay {
             display: none;
             position: fixed;
@@ -124,14 +145,16 @@
 
         #bingo-overlay button {
             margin-top: 20px;
-            padding: 10px 30px;
-            font-size: 1rem;
+            padding: 15px 40px;
+            font-size: 1.2rem;
             background: var(--gold);
             border: none;
             cursor: pointer;
+            color: #000;
+            font-weight: bold;
+            border-radius: 5px;
         }
 
-        /* Caller View (Hidden by default) */
         #caller-view {
             display: none;
             position: fixed;
@@ -140,13 +163,17 @@
             z-index: 200;
             text-align: center;
             padding: 20px;
+            overflow-y: auto;
         }
 
         .big-number {
-            font-size: 10rem;
+            font-size: clamp(5rem, 20vw, 12rem);
             color: var(--gold);
-            margin: 40px 0;
+            margin: 20px 0;
             min-height: 12rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .history {
@@ -159,61 +186,65 @@
         }
 
         .history-ball {
-            width: 40px; height: 40px;
+            width: 45px; height: 45px;
             background: #222;
             border: 1px solid var(--gold);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--gold);
         }
 
         .admin-link {
-            margin-top: 50px;
-            color: #333;
-            font-size: 0.7rem;
+            margin-top: auto;
+            margin-bottom: 20px;
+            color: #444;
+            font-size: 0.8rem;
             text-decoration: none;
+            padding: 20px;
         }
     </style>
 </head>
 <body>
 
-<div id="main-view">
+<div id="main-view" style="display: flex; flex-direction: column; align-items: center; width: 100%; flex-grow: 1;">
     <header><h1>Casino Bingo</h1></header>
 
     <div class="menu-bar">
-        <button id="btn-edit" class="menu-btn active" onclick="setMode('edit')">Zahlen eingeben</button>
+        <button id="btn-edit" class="menu-btn active" onclick="setMode('edit')">Eingabe</button>
         <button id="btn-play" class="menu-btn" onclick="setMode('play')">Werten</button>
     </div>
 
-    <div class="grid" id="bingo-grid">
-        </div>
+    <div id="error-msg"></div>
 
-    <a href="#" class="admin-link" onclick="showCaller()">Admin / Beamer</a>
+    <div class="grid" id="bingo-grid"></div>
+
+    <a href="#" class="admin-link" onclick="showCaller()">Admin / Beamer Ansicht</a>
 </div>
 
 <div id="bingo-overlay">
     BINGO!
-    <button onclick="closeBingo()">Weiter spielen</button>
+    <button onclick="closeBingo()">Weiter</button>
 </div>
 
 <div id="caller-view">
-    <h1 style="font-size: 3rem;">Casino Ziehung</h1>
+    <h1 style="color: var(--gold);">Zahlen ziehen</h1>
     <div class="big-number" id="current-number">--</div>
-    <button class="menu-btn" style="font-size: 2rem; padding: 20px 40px;" onclick="drawNumber()">Zahl ziehen!</button>
-    <p>Gezogene Zahlen:</p>
+    <button class="menu-btn" style="font-size: 1.5rem; padding: 15px 30px;" onclick="drawNumber()">Nächste Zahl</button>
+    <p style="color: var(--gold); margin-top: 30px;">Gezogen:</p>
     <div class="history" id="number-history"></div>
-    <br>
-    <button class="menu-btn" onclick="location.reload()">Reset / Zurück</button>
+    <br><br>
+    <button class="menu-btn" onclick="location.reload()">Zurück zum Spiel</button>
 </div>
 
 <script>
     let mode = 'edit';
     const grid = document.getElementById('bingo-grid');
+    const errorMsg = document.getElementById('error-msg');
     const drawnNumbers = new Set();
     
-    // Initialisierung: Erstelle 25 Felder
     function initGrid() {
         const savedData = JSON.parse(localStorage.getItem('bingo_numbers') || '[]');
         const savedMarks = JSON.parse(localStorage.getItem('bingo_marks') || '[]');
@@ -231,99 +262,13 @@
             input.value = savedData[i] || '';
             input.placeholder = "?";
             
-            input.addEventListener('change', saveState);
+            input.addEventListener('input', () => {
+                validateDuplicates();
+                saveState();
+            });
+
             cell.appendChild(input);
-            
-            cell.addEventListener('click', () => handleCellClick(i));
-            grid.appendChild(cell);
-        }
-    }
-
-    function setMode(newMode) {
-        mode = newMode;
-        document.getElementById('btn-edit').classList.toggle('active', mode === 'edit');
-        document.getElementById('btn-play').classList.toggle('active', mode === 'play');
-        
-        const inputs = document.querySelectorAll('.cell input');
-        inputs.forEach(input => {
-            input.disabled = (mode === 'play');
-        });
-    }
-
-    function handleCellClick(index) {
-        if (mode !== 'play') return;
-        
-        const cells = document.querySelectorAll('.cell');
-        cells[index].classList.toggle('marked');
-        saveState();
-        checkBingo();
-    }
-
-    function saveState() {
-        const inputs = document.querySelectorAll('.cell input');
-        const numbers = Array.from(inputs).map(input => input.value);
-        const marks = [];
-        document.querySelectorAll('.cell').forEach((cell, i) => {
-            if (cell.classList.contains('marked')) marks.push(i);
-        });
-
-        localStorage.setItem('bingo_numbers', JSON.stringify(numbers));
-        localStorage.setItem('bingo_marks', JSON.stringify(marks));
-    }
-
-    function checkBingo() {
-        const cells = document.querySelectorAll('.cell');
-        const isMarked = (i) => cells[i].classList.contains('marked');
-        
-        // Gewinnlinien (5 horizontal, 5 vertikal, 2 diagonal)
-        const lines = [
-            [0,1,2,3,4], [5,6,7,8,9], [10,11,12,13,14], [15,16,17,18,19], [20,21,22,23,24], // Hor
-            [0,5,10,15,20], [1,6,11,16,21], [2,7,12,17,22], [3,8,13,18,23], [4,9,14,19,24], // Ver
-            [0,6,12,18,24], [4,8,12,16,20] // Diag
-        ];
-
-        for (let line of lines) {
-            if (line.every(isMarked)) {
-                document.getElementById('bingo-overlay').style.display = 'flex';
-                return;
-            }
-        }
-    }
-
-    function closeBingo() {
-        document.getElementById('bingo-overlay').style.display = 'none';
-    }
-
-    // Caller / Beamer Logik
-    function showCaller() {
-        document.getElementById('main-view').style.display = 'none';
-        document.getElementById('caller-view').style.display = 'block';
-    }
-
-    function drawNumber() {
-        if (drawnNumbers.size >= 100) return alert("Alle Zahlen gezogen!");
-        
-        let num;
-        do {
-            num = Math.floor(Math.random() * 100) + 1;
-        } while (drawnNumbers.has(num));
-
-        drawnNumbers.add(num);
-        document.getElementById('current-number').innerText = num;
-        
-        const historyDiv = document.getElementById('number-history');
-        const ball = document.createElement('div');
-        ball.className = 'history-ball';
-        ball.innerText = num;
-        historyDiv.prepend(ball);
-    }
-
-    initGrid();
-
-    // Service Worker Register
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-    }
-</script>
-</body>
-</html>
+            cell.addEventListener('click', (e) => {
+                if(mode === 'play') handleCellClick(i);
+            });
+            grid
